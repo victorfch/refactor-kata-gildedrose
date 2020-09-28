@@ -15,17 +15,25 @@ public class GildedRose {
     public void decreaseQuality(int item) {
         items[item].quality--;
     }
-    
+
     public void decreaseSellIn(int item) {
         items[item].sellIn--;
     }
-
+    
+    public void decreaseQualityToZero(int item) {
+        items[item].quality = 0;
+    }
+    
     public boolean canIncreaseQuality(int item) {
         return items[item].quality < 50;
     }
 
     public boolean isQualityPositive(int item) {
         return items[item].quality > 0;
+    }
+    
+    public boolean isSellInNegative(int item) {
+        return items[item].sellIn < 0;
     }
 
     public boolean isSulfuras(int item) {
@@ -39,25 +47,25 @@ public class GildedRose {
     public boolean isBackstagePasses(int item) {
         return items[item].name.equals("Backstage passes to a TAFKAL80ETC concert");
     }
-
     
+    public boolean isNormalItem(int item) {
+        return !isAgedBrie(item) && !isBackstagePasses(item) && !isSulfuras(item);
+    }
+
     public void updateQuality() {
         for (int item = 0; item < items.length; item++) {
             if (!isAgedBrie(item) && !isBackstagePasses(item)) {
                 if (isQualityPositive(item) && !isSulfuras(item)) {
                     decreaseQuality(item);
                 }
-            } else {
-                if (canIncreaseQuality(item)) {
-                    increaseQuality(item);
-                    if (isBackstagePasses(item)) {
-                        if (items[item].sellIn < 11 && canIncreaseQuality(item)) {
-                            increaseQuality(item);
-                        }
-
-                        if (items[item].sellIn < 6 && canIncreaseQuality(item)) {
-                            increaseQuality(item);
-                        }
+            } else if (canIncreaseQuality(item)) {
+                increaseQuality(item);
+                if (isBackstagePasses(item)) {
+                    if (items[item].sellIn < 11 && canIncreaseQuality(item)) {
+                        increaseQuality(item);
+                    }
+                    if (items[item].sellIn < 6 && canIncreaseQuality(item)) {
+                        increaseQuality(item);
                     }
                 }
             }
@@ -66,16 +74,15 @@ public class GildedRose {
                 decreaseSellIn(item);
             }
 
-            if (items[item].sellIn < 0) {
-                if (!isAgedBrie(item)) {
-                    if (!isBackstagePasses(item) && isQualityPositive(item) && !isSulfuras(item)) {
-                        decreaseQuality(item);
-                    } else {
-                        items[item].quality = items[item].quality - items[item].quality;
-                    }
-                } else if (canIncreaseQuality(item)) {
+            if (isSellInNegative(item)) {
+                if (isAgedBrie(item) && canIncreaseQuality(item)) {
                     increaseQuality(item);
+                } else if (isNormalItem(item) && isQualityPositive(item)) {
+                    decreaseQuality(item);
+                } else {
+                    decreaseQualityToZero(item);
                 }
+
             }
         }
     }
